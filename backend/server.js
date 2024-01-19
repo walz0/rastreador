@@ -6,6 +6,8 @@ const path = require('path');
 const cors = require('cors');
 const WebSocket = require('ws');
 const axios = require('axios');
+const parser = require('node-html-parser');
+const he = require("he");
 
 const port = 3000;
 
@@ -55,7 +57,7 @@ wss.on('connection', (ws, req) => {
 
 // Send html on '/'path
 app.get('/', (req, res) => {
-    res.sendFile(path.join(__dirname, + '/index.html'));
+    res.sendStatus(200);
 });
 
 // "Tresguerras",
@@ -68,7 +70,22 @@ app.get('/tresguerras', (req, res) => {});
 
 app.get('/paquetexpress', (req, res) => {});
 
-app.get('/estafata', (req, res) => {});
+app.get('/estafeta', (req, res) => {
+    axios.get("https://cs.estafeta.com/es/Tracking/searchByGet?wayBill=3545762659&wayBillType=0&isShipmentDetail=False")
+        .then((response) => {
+            const history = parser.parse(response.data).querySelectorAll(".stateStatusDiv_4Items");
+            history.forEach((item) => {
+                const title = item.childNodes[1].getAttribute('title');
+                console.log(title);
+            });
+            //res.send(he.decode(nodes.querySelector('.stateStatusDiv_4Items').innerHTML));
+            res.send(response.data);
+        })
+        .catch((err) => {
+            console.log(err);
+            res.sendStatus(500);
+        });
+});
 
 app.post('/potosinos', (req, res) => {
     const guia = req.body.guia;
