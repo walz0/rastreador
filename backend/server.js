@@ -9,7 +9,7 @@ const axios = require('axios');
 const parser = require('node-html-parser');
 const he = require("he");
 
-const port = 3000;
+const port = 3001;
 
 const paqueterias = {
     "Tresguerras": "https://www.tresguerras.com.mx/3G/tracking.php#",
@@ -35,26 +35,6 @@ const paqueterias = {
 }
 
 
-TRESGUERRAS
-POST https://www.tresguerras.com.mx/3G/assets/Ajax/tracking_Ajax.php
-url-encoded form
-    idTalon: CAN00150388
-    action: Talones
-    esKiosko: false
-
-PAQUETEXPRESS API
-
-https://cc.paquetexpress.com.mx/ptxws/rest/api/v1/guia/historico/ultimoevento/CJS01AA0287071/@1@2@3@4@5?source=WEBPAGE
-
-https://cc.paquetexpress.com.mx/ptxws/rest/api/v1/guia/historico/CJS01AA0287071/@1@2@3@4@5?source=WEBPAGE
-
-https://cc.paquetexpress.com.mx/ptxws/rest/api/v1/entrega/firma/CJS01AA0287071/@1@2@3@4@5?source=WEBPAGE
-
-https://cc.paquetexpress.com.mx/ptxws/rest/api/v1/entrega/acuse/CJS01AA0287071/@1@2@3@4@5?source=WEBPAGE
-
-https://cc.paquetexpress.com.mx/ptxws/rest/api/v1/sucursal/CJS01/@1@2@3@4@5?source=WEBPAGE
-
-https://cc.paquetexpress.com.mx/ptxws/rest/api/v1/sucursal/MEX03/@1@2@3@4@5?source=WEBPAGE
 */
 
 app.use(express.static(path.join(__dirname, '/')));
@@ -104,11 +84,57 @@ app.get('/', (req, res) => {
 // "Estafeta",
 // "Otro",
 
-app.get('/tresguerras', (req, res) => {});
+app.get('/tresguerras', (req, res) => {
+/*
+TRESGUERRAS
+POST https://www.tresguerras.com.mx/3G/assets/Ajax/tracking_Ajax.php
+url-encoded form
+    idTalon: CAN00150388
+    action: Talones
+    esKiosko: false
 
-app.get('/paquetexpress', (req, res) => {});
 
-app.get('/estafeta', async (req, res) => {
+*/
+});
+
+app.post('/paquetexpress', async (req, res) => {
+/*
+PAQUETEXPRESS API
+
+https://cc.paquetexpress.com.mx/ptxws/rest/api/v1/guia/historico/ultimoevento/CJS01AA0287071/@1@2@3@4@5?source=WEBPAGE
+
+https://cc.paquetexpress.com.mx/ptxws/rest/api/v1/guia/historico/CJS01AA0287071/@1@2@3@4@5?source=WEBPAGE
+
+https://cc.paquetexpress.com.mx/ptxws/rest/api/v1/entrega/firma/CJS01AA0287071/@1@2@3@4@5?source=WEBPAGE
+
+https://cc.paquetexpress.com.mx/ptxws/rest/api/v1/entrega/acuse/CJS01AA0287071/@1@2@3@4@5?source=WEBPAGE
+
+https://cc.paquetexpress.com.mx/ptxws/rest/api/v1/sucursal/CJS01/@1@2@3@4@5?source=WEBPAGE
+
+https://cc.paquetexpress.com.mx/ptxws/rest/api/v1/sucursal/MEX03/@1@2@3@4@5?source=WEBPAGE
+*/
+    await axios.get("https://cc.paquetexpress.com.mx/ptxws/rest/api/v1/guia/historico/CJS01AA0287455/@1@2@3@4@5?source=WEBPAGE")
+        .then((response) => {
+            const history = JSON.parse(response.data.split("Resultado(")[1].substring(0, response.data.split("Resultado(")[1].length - 1));
+            const guia = history[0]['guia'];
+            const delivered = history[history.length - 1]["eventoId"] == "BDL";
+            const estado = history[history.length - 1]["status"];
+            // si eventoId es "BDL" el paquete esta entregado
+            res.send({
+                "guia": guia,
+                "embarcado": history[0]["fechahora"],
+                "entregado": delivered ? history[history.length - 1]["fechahora"] : undefined,
+                "historia": history
+            });
+        })
+        .catch((err) => {
+            console.log(err);
+            res.sendStatus(500);
+        });
+
+});
+
+app.post('/estafeta', async (req, res) => {
     // get asp session id from cookie
     // get tracking history with asp
     // 
