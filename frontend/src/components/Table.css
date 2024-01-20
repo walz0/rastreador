@@ -1,5 +1,6 @@
 .Table {
-
+    display: flex;
+    justify-content: center;
 }
 
 .Table table {
@@ -19,4 +20,8 @@
 .Table table td {
     /* border: solid 1px #000; */
     padding: 0.25em 0.5em 0.25em 0.5em; 
+}
+
+.Table table tr {
+    border-bottom: solid 1px #000;
 }
