@@ -121,6 +121,7 @@ https://cc.paquetexpress.com.mx/ptxws/rest/api/v1/sucursal/MEX03/@1@2@3@4@5?sour
             const estado = history[history.length - 1]["status"];
             // si eventoId es "BDL" el paquete esta entregado
             res.send({
+                "paqueteria": "Paquetexpress",
                 "guia": guia,
                 "embarcado": history[0]["fechahora"],
                 "entregado": delivered ? history[history.length - 1]["fechahora"] : undefined,
