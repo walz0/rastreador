@@ -1,0 +1,70 @@
+.Navbar {
+    display: flex;
+    width: 100%;
+    height: 30px;
+    padding: 0 0 30px 0;
+    background: #ffffff;
+
+    margin: -3px -3px 0 -3px;
+
+    border: solid;
+    border-width: 3px;
+    border-color: #ffffff;
+    box-shadow: 1px 1px 5px #6868684d;
+
+    /* font-family: "Poppins"; */
+    font-family: Arial, Helvetica, sans-serif;
+    font-weight: 300;
+
+    position: fixed;
+    z-index: 2;
+}
+
+.Navbar .logo {
+    position: absolute;
+    height: 2.25em;
+    width: auto;
+    
+    top: 0.75em;
+    left: 1.5em;
+}
+
+.Navbar ul {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: right;
+
+    margin-left: -4em;
+
+    margin-top: 1.2em;
+
+    width: 100%; 
+    height: auto;
+}
+
+.Navbar ul li {
+    list-style-type: none;
+    color: #000000;
+    padding: 0 1.5em 0 1.5em;
+}
+
+.Navbar ul li a {
+    text-decoration: none;
+    color: #000000;
+    font-size: 1.15em;
+}
+
+.github-link {
+    margin-top: -7px;
+    font-size: 30px;
+}
+
+.github-link a {
+    color: #8B5FBF;
+    text-decoration: none;
+}
+
+.github-link a:hover {
+    color: #FEC0CE;
+    transition: 0.15s;
+}

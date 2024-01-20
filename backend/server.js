@@ -22,8 +22,8 @@ const paqueterias = {
 /*
 {
     "guia": "",
-    "embarcado": "",
-    "entregado": "",
+    "embarcada": "",
+    "entregada": "",
     "historia": {
         {
             "estado": "",
