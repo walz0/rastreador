@@ -84,17 +84,62 @@ app.get('/', (req, res) => {
 // "Estafeta",
 // "Otro",
 
-app.get('/tresguerras', (req, res) => {
-/*
-TRESGUERRAS
-POST https://www.tresguerras.com.mx/3G/assets/Ajax/tracking_Ajax.php
-url-encoded form
-    idTalon: CAN00150388
-    action: Talones
-    esKiosko: false
+app.post('/tresguerras', async (req, res) => {
+    /*
+    TRESGUERRAS
+    POST https://www.tresguerras.com.mx/3G/assets/Ajax/tracking_Ajax.php
+    url-encoded form
+        idTalon: CAN00150388
+        action: Talones
+        esKiosko: false
 
 
-*/
+    */
+    await axios({
+        method: 'POST',
+        url: 'https://www.tresguerras.com.mx/3G/assets/Ajax/tracking_Ajax.php',
+        headers: {
+            'Content-Type': 'application/x-www-form-urlencoded'
+        },
+        data: {
+            "idTalon": 'CAN00150388',
+            "action": 'Talones',
+            "esKiosko": false,
+        }
+    }).then((response) => {
+        const doc = parser.parse(response.data);
+
+        let history = doc.querySelectorAll("tr").slice(1);
+        const guia = doc.querySelector("h2").innerText.split(": ")[1];
+
+        history = history.map(row => {
+            const cols = row.childNodes.filter(col => {
+                if (col.innerText.trim() !== '') {
+                    return col;
+                }
+            });
+
+            return {
+                "estado": cols[0].innerText.trim(),
+                "sucursal": cols[1].innerText.trim(),
+                "fechahora": cols[2].innerText.trim()
+            }
+        });
+        const delivered = true;
+
+        res.send({
+            "paqueteria": "TRESGUERRAS",
+            "guia": guia,
+            "embarcado": history[0]["fechahora"],
+            "entregado": delivered ? history[history.length - 1]["fechahora"] : undefined,
+            "historia": history 
+        });
+    }).catch((err) => {
+        console.log(err);
+        res.sendStatus(500);
+    });
+
+    //res.sendStatus(200);
 });
 
 app.post('/paquetexpress', async (req, res) => {
@@ -113,7 +158,10 @@ https://cc.paquetexpress.com.mx/ptxws/rest/api/v1/sucursal/CJS01/@1@2@3@4@5?sour
 
 https://cc.paquetexpress.com.mx/ptxws/rest/api/v1/sucursal/MEX03/@1@2@3@4@5?source=WEBPAGE
 */
-    await axios.get("https://cc.paquetexpress.com.mx/ptxws/rest/api/v1/guia/historico/CJS01AA0287455/@1@2@3@4@5?source=WEBPAGE")
+    // CJS01AA0287455
+    const guia = req.body.guia;
+
+    await axios.get(`https://cc.paquetexpress.com.mx/ptxws/rest/api/v1/guia/historico/${guia}/@1@2@3@4@5?source=WEBPAGE`)
         .then((response) => {
             const history = JSON.parse(response.data.split("Resultado(")[1].substring(0, response.data.split("Resultado(")[1].length - 1));
             const guia = history[0]['guia'];
