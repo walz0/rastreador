@@ -3,7 +3,18 @@ import Table from '../components/Table';
 import './Home.css';
 
 export default class Home extends Component {
-    /**/
+    /*
+        FACTURAR A
+        PROVEEDOR
+        ORDEN DE COMPRA
+        FECHA
+        CONDICIONES DE PAGO
+        CANTIDAD
+        CODIGO
+        COSTO UNITARIO
+        TOTAL
+
+    */
 
     render() {
         return (
