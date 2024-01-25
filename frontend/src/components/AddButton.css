@@ -1,0 +1,21 @@
+.AddButton {
+    background: limegreen;
+    width: fit-content;
+    height: 1.5em;
+
+    padding: 0.25em 0.5em 0.25em 0.5em;
+
+    margin-left: auto;
+    margin-right: 0;
+
+    margin-bottom: 0.5em;
+
+    font-weight: bold;
+    color: white;
+
+    text-align: center;
+    
+    cursor: pointer;
+
+    border-radius: 0.5em;
+}

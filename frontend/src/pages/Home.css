@@ -17,3 +17,21 @@
     width: 33%;
     height: 100%;
 }
+
+.Home .add-container {
+    display: flex;
+    flex-wrap: nowrap;
+    font-weight: bold;
+}
+
+.Home .AddForm {
+    width: 100%;
+}
+
+.full-logo {
+    position: absolute;
+    width: 20vw;
+
+    bottom: 1em;
+    right: 1em;
+}

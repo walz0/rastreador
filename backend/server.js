@@ -24,6 +24,7 @@ const paqueterias = {
     "guia": "",
     "embarcada": "",
     "entregada": "",
+    "id": "",
     "historia": {
         {
             "estado": "",
@@ -130,8 +131,8 @@ app.post('/tresguerras', async (req, res) => {
         res.send({
             "paqueteria": "TRESGUERRAS",
             "guia": guia,
-            "embarcado": history[0]["fechahora"],
-            "entregado": delivered ? history[history.length - 1]["fechahora"] : undefined,
+            "embarcada": history[0]["fechahora"],
+            "entregada": delivered ? history[history.length - 1]["fechahora"] : undefined,
             "historia": history 
         });
     }).catch((err) => {
@@ -171,8 +172,8 @@ https://cc.paquetexpress.com.mx/ptxws/rest/api/v1/sucursal/MEX03/@1@2@3@4@5?sour
             res.send({
                 "paqueteria": "Paquetexpress",
                 "guia": guia,
-                "embarcado": history[0]["fechahora"],
-                "entregado": delivered ? history[history.length - 1]["fechahora"] : undefined,
+                "embarcada": history[0]["fechahora"],
+                "entregada": delivered ? history[history.length - 1]["fechahora"] : undefined,
                 "historia": history
             });
         })
@@ -230,7 +231,6 @@ app.post('/estafeta', async (req, res) => {
 // ex: 3026756050
 app.post('/potosinos', (req, res) => {
     const guia = req.body.guia;
-    console.log(guia);
     axios({
         method: 'POST',
         url: 'https://cotizador.potosinos.com.mx/php/ws.php?ws=wsRastreo',
@@ -241,7 +241,50 @@ app.post('/potosinos', (req, res) => {
             "guia": guia
         }
     }).then((response) => {
-        res.send(response.data);
+        const resp = response.data["wsRastreoResponse"]["WS_RastreoResponse"];
+        const delivered = resp["WS_Guia_Simple"]["Estado_de_la_Guia"] == "ENTREGADA" ? true : false;
+
+        let history = resp["WS_Historia"]["WS_Historia_Guia"];
+        let embarcada;
+        let entregada;
+
+        history.forEach(evento => {
+            if (evento["D_Estado_Guia"] == "EMBARCADA") {
+                embarcada = evento["F_Historia"];
+            }
+            if (evento["D_Estado_Guia"] == "ENTREGADA") {
+                entregada = evento["F_Historia"];
+            }
+        });
+
+        history = history.map(evento => {
+            return {
+                "estado": evento["D_Estado_Guia"],
+                "sucursal": evento["D_Oficina"],
+                "fechahora": evento["F_Historia"]
+            }
+        });
+
+        if (resp["result"] !== "Success") {
+            res.sendStatus(500);
+        }
+        else {
+            // res.send(resp);
+            res.send({
+                "paqueteria": "Potosinos",
+                "guia": guia,
+                "entregada": entregada,
+                "embarcada": embarcada,
+                "historia": history
+            });
+        }
+        // res.send({
+        //     "paqueteria": "Paquetexpress",
+        //     "guia": guia,
+        //     "embarcado": history[0]["fechahora"],
+        //     "entregado": delivered ? history[history.length - 1]["fechahora"] : undefined,
+        //     "historia": history
+        // });
     }).catch((err) => {
         console.log(err);
         res.sendStatus(500);
