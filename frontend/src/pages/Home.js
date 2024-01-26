@@ -7,6 +7,8 @@ import Modal from 'react-modal';
 import DatePicker from "react-datepicker";
 import "react-datepicker/dist/react-datepicker.css";
 import logo from '../full_logo.png';
+import CloseButton from '../components/CloseButton';
+import Button from '../components/Button';
 
 
 export default function Home() {
@@ -24,6 +26,12 @@ export default function Home() {
 
     const [data, setData] = useState([]);
     const [startDate, setStartDate] = useState(new Date());
+    const [formData, setFormData] = useState({
+        orden: '',
+        paqueteria: '',
+        guia: '',
+        fecha: '',
+    });
 
     // Modal.setAppElement('#test');
 
@@ -35,13 +43,39 @@ export default function Home() {
             bottom: 'auto',
             marginRight: '-50%',
             transform: 'translate(-50%, -50%)',
-            width: '35vw',
-            height: '40vh',
+            width: '50em',
+            height: '30em',
         },
     };
 
     let subtitle;
     const [modalIsOpen, setIsOpen] = React.useState(false);
+
+    const handleChange = (e) => {
+        const { name, value } = e.target;
+        setFormData((prevData) => ({
+            ...prevData,
+            [name]: value,
+        }));
+    };
+
+    const handleSubmit = (e) => {
+        e.preventDefault();
+        const formDataObject = new FormData(e.target);
+
+        const formDataPlainObject = {};
+            formDataObject.forEach((value, key) => {
+            formDataPlainObject[key] = value;
+        });
+
+        console.log('Form Data:', formDataPlainObject);
+        addTracker(
+            formDataPlainObject.orden,
+            formDataPlainObject.paqueteria.toLowerCase(),
+            formDataPlainObject.fecha,
+            formDataPlainObject.guia
+            );
+    };
 
     function openModal() {
         setIsOpen(true);
@@ -57,11 +91,15 @@ export default function Home() {
     }
 
     function addTracker(orden, paqueteria, fecha, guia) {
-        axios.post('http://localhost:3001/potosinos', {
-            "guia": "3026756050"
+        // check if paqueteria is not other
+        // ...
+        console.log(paqueteria);
+        axios.post('http://localhost:3001/' + paqueteria, {
+            "guia": guia 
         })
         .then(function (response) {
-            console.log(response.data);
+            response.data["orden"] = orden;
+            response.data["fecha"] = fecha;
             setData(data.concat(response.data));
         })
         .catch(function (error) {
@@ -73,7 +111,7 @@ export default function Home() {
         <div className='Home'>
             <div className='Orders'>
                 <h2 className='title'>Ordenes</h2>
-                <AddButton onClick={addTracker} />
+                <AddButton onClick={openModal} />
                 <Table cols={[
                     'Orden de compra', 
                     'Paquetería', 
@@ -87,27 +125,48 @@ export default function Home() {
             <div className='Add'>
                 <h2 className='title'>Vista Previa</h2>
             </div>
-            <button onClick={openModal}>Open Modal</button>
             <Modal
                     isOpen={modalIsOpen}
                     onAfterOpen={afterOpenModal}
                     onRequestClose={closeModal}
                     style={customStyles}
                     contentLabel="Example Modal"
+                    ariaHideApp={false}
                 >
+                <CloseButton onClick={closeModal}/>
                 <h2 ref={(_subtitle) => (subtitle = _subtitle)}>AGREGAR ORDEN</h2>
-                <form className='AddForm'>
-                    <input placeholder='Guía'/>
-                    <select name="Paqueteria" id="paqueteria">
-                        <option value="potosinos">Potosinos</option>
-                        <option value="tresguerras">Tresguerras</option>
-                        <option value="estafeta">Estafeta</option>
-                        <option value="paquetexpress">Paquetexpress</option>
-                        <option value="otro">Otro</option>
-                    </select>
-                    <DatePicker selected={startDate} dateFormat={"DD/MM/YYYY"} onChange={(date) => setStartDate(date)} />
+                <form className='AddForm' onSubmit={handleSubmit}>
+                    <table>
+                        <thead>
+                            <tr>
+                                <th>Orden de Compra</th>
+                                <th>Paquetería</th>
+                                <th>Guía</th>
+                                <th>Fecha de Orden</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr>
+                                <td><input name="orden" placeholder='Orden de Compra' onChange={handleChange}/></td>
+                                <td>
+                                    <select name="paqueteria" id="paqueteria" onChange={handleChange}>
+                                        <option disabled defaultValue={true} value></option>
+                                        <option value="potosinos">Potosinos</option>
+                                        <option value="tresguerras">Tresguerras</option>
+                                        <option value="estafeta">Estafeta</option>
+                                        <option value="paquetexpress">Paquetexpress</option>
+                                        <option value="otro">Otro</option>
+                                    </select>
+                                </td>
+                                <td><input name="guia" placeholder='Guía' onChange={handleChange}/></td>
+                                <td><DatePicker selected={startDate} dateFormat={"dd/MM/yyyy"} onChange={(date) => setStartDate(date)} /></td>
+                            </tr>
+                        </tbody>
+                    </table>
+                    <div className="submit">
+                        <Button type="submit" text="Agregar"/>
+                    </div>
                 </form>
-                <button onClick={closeModal}>close</button>
                 <img className="full-logo" src={logo} />
             </Modal>
         </div>

@@ -30,8 +30,12 @@
 
 .full-logo {
     position: absolute;
-    width: 20vw;
+    width: 23em;
 
     bottom: 1em;
     right: 1em;
+}
+
+.submit {
+    margin-top: 1em;
 }

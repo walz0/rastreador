@@ -1,0 +1,26 @@
+.Button {
+    background: #2e479b;
+    width: fit-content;
+
+    padding: 0.5em 1em 0.5em 1em;
+
+
+    margin-bottom: 0.5em;
+
+    font-size: 1em;
+    font-weight: bold;
+    color: white;
+
+    text-align: center;
+    
+    cursor: pointer;
+
+    outline: none;
+    border: none;
+
+    border-radius: 0.5em;
+}
+
+.Button:focus {
+    outline: none;
+}
