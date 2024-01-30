@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useReducer } from 'react';
 import Table from '../components/Table';
 import axios from 'axios';
 import './Home.css';
@@ -9,6 +9,7 @@ import "react-datepicker/dist/react-datepicker.css";
 import logo from '../full_logo.png';
 import CloseButton from '../components/CloseButton';
 import Button from '../components/Button';
+import Preview from '../components/Preview';
 
 
 export default function Home() {
@@ -24,7 +25,7 @@ export default function Home() {
         TOTAL
     */
 
-    const [data, setData] = useState([]);
+    const [data, setData] = useState({});
     const [startDate, setStartDate] = useState(new Date());
     const [formData, setFormData] = useState({
         orden: '',
@@ -32,8 +33,14 @@ export default function Home() {
         guia: '',
         fecha: '',
     });
+    const [, forceUpdate] = useReducer(x => x + 1, 0);
+    const [selected, setSelected] = useState("");
 
     // Modal.setAppElement('#test');
+
+    function getOrdenList(data) {
+        return Object.keys(data).map(orden => data[orden]);
+    }
 
     const customStyles = {
         content: {
@@ -68,6 +75,8 @@ export default function Home() {
             formDataPlainObject[key] = value;
         });
 
+        formDataPlainObject["fecha"] = startDate;
+
         console.log('Form Data:', formDataPlainObject);
         addTracker(
             formDataPlainObject.orden,
@@ -75,6 +84,7 @@ export default function Home() {
             formDataPlainObject.fecha,
             formDataPlainObject.guia
             );
+        // closeModal();
     };
 
     function openModal() {
@@ -95,12 +105,14 @@ export default function Home() {
         // ...
         console.log(paqueteria);
         axios.post('http://localhost:3001/' + paqueteria, {
-            "guia": guia 
+            "guia": guia,
+            "orden": orden,
+            "fecha": fecha,
         })
         .then(function (response) {
-            response.data["orden"] = orden;
-            response.data["fecha"] = fecha;
-            setData(data.concat(response.data));
+            // this feels wrong
+            data[orden] = response.data;
+            setData(data);
         })
         .catch(function (error) {
             console.log(error);
@@ -116,14 +128,19 @@ export default function Home() {
                     'Orden de compra', 
                     'Paquetería', 
                     'Fecha de orden', 
-                    'Embarcada', 
-                    'Entregada', 
                     'Guía',
                     'Estado'
-                ]} data={data} />
+                ]} data={getOrdenList(data)}
+                   setSelected={setSelected} />
             </div>
             <div className='Add'>
                 <h2 className='title'>Vista Previa</h2>
+                <Preview selected={getOrdenList(data).length > 0 && selected !== "" ? data[selected] : {
+                    "paqueteria": "",
+                    "embarcada": "",
+                    "entregada": "",
+                    "historia": [],
+                }}/>
             </div>
             <Modal
                     isOpen={modalIsOpen}

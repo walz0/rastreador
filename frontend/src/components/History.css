@@ -1,0 +1,21 @@
+.History {
+    max-height: 25em;
+    width: 27.5em;
+    /* background: red; */
+    overflow-y: scroll;
+
+    margin: auto;
+}
+
+.History .evento {
+    padding: 1em;
+}
+
+.History .evento:nth-child(odd) {
+    /* border-top: solid 1px #000; */
+    background: #dbdbdb;
+}
+
+.History .estado {
+    font-weight: bold;
+}

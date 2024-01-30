@@ -6,14 +6,14 @@ export default class Table extends Component {
     componentDidMount(props) {
     }
 
-    exampleRow(orden, paqueteria, fecha, embarcada, entregada, guia, estado) {
+    exampleRow(orden, paqueteria, fecha, guia, estado) {
         return(
-            <tr>
+            <tr onClick={() => this.props.setSelected(orden)}>
                 <td>{orden}</td>
                 <td>{paqueteria}</td>
                 <td>{fecha}</td>
-                <td>{embarcada}</td>
-                <td>{entregada}</td>
+                {/* <td>{embarcada}</td>
+                <td>{entregada}</td> */}
                 <td>{guia}</td>
                 <td>{estado}</td>
             </tr>
@@ -34,12 +34,13 @@ export default class Table extends Component {
                 <tbody>
                     { data.map(row => 
                         this.exampleRow(
-                            "STA-012702",
+                            row.orden,
                             row.paqueteria,
-                            "undefined",
-                            row.embarcada,
-                            row.entregada,
+                            row.fecha,
+                            // new Date(row.embarcada).toLocaleDateString() + " " + new Date(row.embarcada).toLocaleTimeString(),
+                            // new Date(row.entregada).toLocaleDateString() + " " + new Date(row.entregada).toLocaleTimeString(),
                             row.guia,
+                            row.estado,
                         )
                     ) }
                 </tbody>

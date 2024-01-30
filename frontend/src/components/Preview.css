@@ -1,0 +1,40 @@
+.Preview {
+    background: #e8e8e8;
+    border-radius: 1em;
+    padding-bottom: 1em;
+
+    width: 27.5em;
+    margin: auto;
+    border: solid 2px #2e479b;
+}
+
+.Preview .info{
+    padding-top: 1em;
+}
+
+.Preview .orden {
+    border-top-right-radius: 0.8em;
+    border-top-left-radius: 0.8em;
+
+    padding-top: 1em;
+    padding-bottom: 1em;
+
+    font-size: large;
+    font-weight: bold;
+    color: #fff;
+
+    background: #2e479b;
+}
+
+.Preview .paqueteria {
+    width: 10em;
+    height: auto;
+}
+
+.Preview .entregada {
+    /* font-family: 'Courier New', Courier, monospace; */
+}
+
+.Preview .embarcada{
+    /* font-family: 'Courier New', Courier, monospace; */
+}

@@ -79,6 +79,27 @@ app.get('/', (req, res) => {
     res.sendStatus(200);
 });
 
+function getMonth(month) {
+    const months = {
+        'enero': 0,
+        'febrero': 1,
+        'marzo': 2,
+        'abril': 3,
+        'mayo': 4,
+        'junio': 5,
+        'julio': 6,
+        'agosto': 7,
+        'septiembre': 8,
+        'octubre': 9,
+        'noviembre': 10,
+        'diciembre': 11
+    };
+
+    console.log(month);
+
+    return months[month.toLowerCase()];
+}
+
 // "Tresguerras",
 // "Paquetexpress",
 // "Potosinos",
@@ -96,6 +117,11 @@ app.post('/tresguerras', async (req, res) => {
 
 
     */
+
+    const guia = req.body.guia;
+    const orden = req.body.orden;
+    const fecha = req.body.fecha;
+
     await axios({
         method: 'POST',
         url: 'https://www.tresguerras.com.mx/3G/assets/Ajax/tracking_Ajax.php',
@@ -103,13 +129,14 @@ app.post('/tresguerras', async (req, res) => {
             'Content-Type': 'application/x-www-form-urlencoded'
         },
         data: {
-            "idTalon": 'CAN00150388',
+            "idTalon": guia,
             "action": 'Talones',
             "esKiosko": false,
         }
     }).then((response) => {
         const doc = parser.parse(response.data);
 
+        let estado;
         let history = doc.querySelectorAll("tr").slice(1);
         const guia = doc.querySelector("h2").innerText.split(": ")[1];
 
@@ -120,17 +147,33 @@ app.post('/tresguerras', async (req, res) => {
                 }
             });
 
+            const fecha = cols[2].innerText.trim().replace(/ +/g, ' ');
+            // Parse parts of date
+            const year = parseInt(fecha.split(' ')[5]);
+            const month = getMonth(fecha.split(' ')[3]);
+            const day = parseInt(fecha.split(' ')[1]) - 1;
+            const hours = parseInt(fecha.split(' ')[6].split(':')[0]);
+            const min = parseInt(fecha.split(' ')[6].split(':')[1]);
+            // Get timestamp
+            const fechahora = new Date(year, month, day, min, 0, 0).getTime();
+
+            // Get lastest status
+            estado = cols[0].innerText.trim();
+
             return {
                 "estado": cols[0].innerText.trim(),
                 "sucursal": cols[1].innerText.trim(),
-                "fechahora": cols[2].innerText.trim()
+                "fechahora": fechahora
             }
         });
         const delivered = true;
 
         res.send({
             "paqueteria": "TRESGUERRAS",
+            "orden": orden,
+            "fecha": fecha,
             "guia": guia,
+            "estado": estado,
             "embarcada": history[0]["fechahora"],
             "entregada": delivered ? history[history.length - 1]["fechahora"] : undefined,
             "historia": history 
@@ -161,16 +204,31 @@ https://cc.paquetexpress.com.mx/ptxws/rest/api/v1/sucursal/MEX03/@1@2@3@4@5?sour
 */
     // CJS01AA0287455
     const guia = req.body.guia;
+    const orden = req.body.orden;
+    const fecha = req.body.fecha;
 
     await axios.get(`https://cc.paquetexpress.com.mx/ptxws/rest/api/v1/guia/historico/${guia}/@1@2@3@4@5?source=WEBPAGE`)
         .then((response) => {
-            const history = JSON.parse(response.data.split("Resultado(")[1].substring(0, response.data.split("Resultado(")[1].length - 1));
+            let history = JSON.parse(response.data.split("Resultado(")[1].substring(0, response.data.split("Resultado(")[1].length - 1));
             const guia = history[0]['guia'];
             const delivered = history[history.length - 1]["eventoId"] == "BDL";
             const estado = history[history.length - 1]["status"];
+
+            history = history.map(row => {
+                return {
+                    "estado": row["status"].toUpperCase(),
+                    "sucursal": row["sucursal"],
+                    "fechahora": row["fechahora"] 
+                }
+            });
+
+            console.log(response.data);
             // si eventoId es "BDL" el paquete esta entregado
             res.send({
                 "paqueteria": "Paquetexpress",
+                "orden": orden,
+                "fecha": fecha,
+                "estado": estado.toUpperCase(),
                 "guia": guia,
                 "embarcada": history[0]["fechahora"],
                 "entregada": delivered ? history[history.length - 1]["fechahora"] : undefined,
@@ -188,6 +246,7 @@ app.post('/estafeta', async (req, res) => {
     // get asp session id from cookie
     // get tracking history with asp
     // 
+
 
     let cookie = undefined;
     await axios.get("https://cs.estafeta.com/es/Tracking/searchByGet?wayBill=3545762659&wayBillType=0&isShipmentDetail=False")
@@ -231,6 +290,9 @@ app.post('/estafeta', async (req, res) => {
 // ex: 3026756050
 app.post('/potosinos', (req, res) => {
     const guia = req.body.guia;
+    const orden = req.body.orden;
+    const fecha = req.body.fecha;
+
     axios({
         method: 'POST',
         url: 'https://cotizador.potosinos.com.mx/php/ws.php?ws=wsRastreo',
@@ -242,26 +304,39 @@ app.post('/potosinos', (req, res) => {
         }
     }).then((response) => {
         const resp = response.data["wsRastreoResponse"]["WS_RastreoResponse"];
-        const delivered = resp["WS_Guia_Simple"]["Estado_de_la_Guia"] == "ENTREGADA" ? true : false;
+        const delivered = resp["WS_Guia_Simple"]["Estado_de_la_Guia"] == "TRANSMITIDA" ? true : false;
 
         let history = resp["WS_Historia"]["WS_Historia_Guia"];
         let embarcada;
         let entregada;
-
-        history.forEach(evento => {
-            if (evento["D_Estado_Guia"] == "EMBARCADA") {
-                embarcada = evento["F_Historia"];
-            }
-            if (evento["D_Estado_Guia"] == "ENTREGADA") {
-                entregada = evento["F_Historia"];
-            }
-        });
+        let estado;
 
         history = history.map(evento => {
+            const fecha = evento["F_Historia"].trim().replace(/ +/g, ' ');
+            const year = fecha.split(' ')[2];
+            const month = fecha.split(' ')[0];
+            const day = parseInt(fecha.split(' ')[1]);
+            const hours = parseInt(fecha.split(' ')[3].split(':')[0]);
+            const minutes = parseInt(fecha.split(' ')[3].split(':')[1].replace('PM', ''));
+
+            const fechahora = new Date(`${month} ${day}, ${year} ${hours}:${minutes}`).getTime();
+
+            // Get latest estado
+            estado = evento["D_Estado_Guia"];
+
             return {
                 "estado": evento["D_Estado_Guia"],
                 "sucursal": evento["D_Oficina"],
-                "fechahora": evento["F_Historia"]
+                "fechahora": fechahora
+            }
+        });
+
+        history.forEach(evento => {
+            if (evento["estado"] == "EMBARCADA") {
+                embarcada = evento["fechahora"];
+            }
+            if (evento["estado"] == "TRANSMITIDA") {
+                entregada = evento["fechahora"];
             }
         });
 
@@ -273,18 +348,14 @@ app.post('/potosinos', (req, res) => {
             res.send({
                 "paqueteria": "Potosinos",
                 "guia": guia,
+                "orden": orden,
+                "fecha": fecha,
+                "estado": estado,
                 "entregada": entregada,
                 "embarcada": embarcada,
                 "historia": history
             });
         }
-        // res.send({
-        //     "paqueteria": "Paquetexpress",
-        //     "guia": guia,
-        //     "embarcado": history[0]["fechahora"],
-        //     "entregado": delivered ? history[history.length - 1]["fechahora"] : undefined,
-        //     "historia": history
-        // });
     }).catch((err) => {
         console.log(err);
         res.sendStatus(500);
