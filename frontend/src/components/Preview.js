@@ -10,7 +10,6 @@ export default function Preview(props) {
     function paqueteriaImage(paqueteria) {
         switch (paqueteria.toLowerCase()) {
             case "potosinos":
-                console.log('test');
                 return potosinos;
             case "paquetexpress":
                 return paquetexpress;
