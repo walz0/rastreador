@@ -105,10 +105,12 @@ function saveOrden(orden) {
     if (!fs.existsSync("./data/ordenes.json")) {
         // If the file doesn't exist, create it and write content
         console.log("creatinf file.");
-        fs.writeFileSync("./data/ordenes.json", JSON.stringify([orden]));
+        let data = {};
+        data[orden] = {};
+        fs.writeFileSync("./data/ordenes.json", JSON.stringify(data));
     } else {
         let data = JSON.parse(fs.readFileSync("./data/ordenes.json"));
-        data.push(orden);
+        data[orden] = {};
         fs.writeFileSync("./data/ordenes.json", JSON.stringify(data));
     }
 }
