@@ -100,6 +100,23 @@ function getMonth(month) {
     return months[month.toLowerCase()];
 }
 
+function saveOrden(orden) {
+    // Check if the file exists
+    if (!fs.existsSync("./data/ordenes.json")) {
+        // If the file doesn't exist, create it and write content
+        console.log("creatinf file.");
+        fs.writeFileSync("./data/ordenes.json", JSON.stringify([orden]));
+    } else {
+        let data = JSON.parse(fs.readFileSync("./data/ordenes.json"));
+        data.push(orden);
+        fs.writeFileSync("./data/ordenes.json", JSON.stringify(data));
+    }
+}
+
+function removeOrden() {
+    
+}
+
 // "Tresguerras",
 // "Paquetexpress",
 // "Potosinos",
@@ -365,4 +382,5 @@ app.post('/potosinos', (req, res) => {
 // Create the server and listen on port
 http.createServer(app).listen(port, () => {
     console.log(`Server running on http://localhost:${port}`);
+    saveOrden("test");
 });
