@@ -11,11 +11,16 @@
 .Home .Orders {
     width: 50%;
     height: 100%;
+
+    margin: auto;
+    margin-top: 0;
 }
 
 .Home .Add {
     width: 33%;
     height: 100%;
+
+    margin: auto;
 }
 
 .Home .add-container {

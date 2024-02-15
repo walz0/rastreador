@@ -77,13 +77,12 @@ export default function Home() {
 
         formDataPlainObject["fecha"] = startDate;
 
-        console.log('Form Data:', formDataPlainObject);
         addTracker(
             formDataPlainObject.orden,
             formDataPlainObject.paqueteria.toLowerCase(),
             formDataPlainObject.fecha,
             formDataPlainObject.guia
-            );
+        );
         // closeModal();
     };
 
@@ -113,6 +112,7 @@ export default function Home() {
             // this feels wrong
             data[orden] = response.data;
             setData(data);
+            closeModal();
         })
         .catch(function (error) {
             console.log(error);
@@ -142,6 +142,7 @@ export default function Home() {
                     "historia": [],
                 }}/>
             </div>
+
             <Modal
                     isOpen={modalIsOpen}
                     onAfterOpen={afterOpenModal}
