@@ -19,6 +19,13 @@ const paqueterias = {
     "Otro": undefined
 };
 
+// Cookie for getting tracking history from estafeta, should probably get
+// renewed if its more than 5 min old
+var estafetaCookie = {
+    "cookie": "",
+    "timestamp": 0
+};
+
 /*
 {
     "guia": "",
@@ -261,47 +268,52 @@ https://cc.paquetexpress.com.mx/ptxws/rest/api/v1/sucursal/MEX03/@1@2@3@4@5?sour
 
 });
 
-app.post('/estafeta', async (req, res) => {
-    // get asp session id from cookie
-    // get tracking history with asp
-    // 
-
-
-    let cookie = undefined;
-    await axios.get("https://cs.estafeta.com/es/Tracking/searchByGet?wayBill=3545762659&wayBillType=0&isShipmentDetail=False")
+// Renew cookie for estafeta
+async function renewCookie(guia) {
+    // If estafeta cookie is over five minutes old
+    let wayBill;
+    await axios.get(`https://cs.estafeta.com/es/Tracking/searchByGet?wayBill=${guia}&wayBillType=0&isShipmentDetail=False`)
         .then((response) => {
-            // const history = parser.parse(response.data).querySelectorAll(".stateStatusDiv_4Items");
-            // history.forEach((item) => {
-            //     const title = item.childNodes[1].getAttribute('title');
-            //     console.log(title);
-            // });
-            //res.send(he.decode(nodes.querySelector('.stateStatusDiv_4Items').innerHTML));
-            // res.send(response.headers);
-            cookie = response.headers['set-cookie'].join('; ');
+            const cookie = response.headers['set-cookie'].join('; ');
+
+            if (Date.now() - estafetaCookie.timestamp > (60 * 1000) * 5) {
+                // Set cookie globally
+                estafetaCookie = {
+                    "cookie": cookie,
+                    "timestamp": Date.now()
+                };
+            }
+
+            // Parse page for waybill
+            const shipment = parser.parse(response.data).querySelector(".shipmentInfoDiv");
+            wayBill = shipment.childNodes[1].querySelector(".shipmentInfoSeparator").textContent.split("\n")[2].trim();
+            
         })
         .catch((err) => {
             console.log(err);
-            // res.sendStatus(500);
         });
 
-    console.log(cookie);
+    return wayBill;
+}
+
+app.post('/estafeta', async (req, res) => {
+    const guia = req.body.guia;
+    // Check for cookie refresh and get waybill
+    const wayBill = await renewCookie(guia);
 
     await axios({
         method: 'POST',
         url: 'https://cs.estafeta.com/es/Tracking/GetTrackingItemHistory',
         headers: {
             'Content-Type': 'application/x-www-form-urlencoded',
-            'Origin': 'https://cs.estafeta.com',
-            'cookie': cookie
+            'cookie': estafetaCookie.cookie
         },
         data: {
-            "waybill": '501869766881C680191554'
+            "waybill": wayBill
         }
     }).then((response) => {
-        // console.log(response.data);
         res.send(response.data);
     }).catch((err) => {
-        // console.log(err);
         res.sendStatus(500);
     });
 });
