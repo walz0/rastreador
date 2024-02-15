@@ -13,8 +13,8 @@ export default class Navbar extends Component {
                 </a>
                 <ul>
                     {/* <li className='name'>AIDAN WALZ</li> */}
-                    <li><a href="/about">Hogar</a></li>
-                    <li><a href="/contact">Historia</a></li>
+                    <li><a href="/home">Hogar</a></li>
+                    <li><a href="/history">Historia</a></li>
                 </ul>                
             </div>
         )
