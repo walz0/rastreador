@@ -135,12 +135,7 @@ export default function Home() {
             </div>
             <div className='Add'>
                 <h2 className='title'>Vista Previa</h2>
-                <Preview selected={getOrdenList(data).length > 0 && selected !== "" ? data[selected] : {
-                    "paqueteria": "",
-                    "embarcada": "",
-                    "entregada": "",
-                    "historia": [],
-                }}/>
+                <Preview selected={getOrdenList(data).length > 0 && selected !== "" ? data[selected] : undefined}/>
             </div>
 
             <Modal

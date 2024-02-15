@@ -20,17 +20,23 @@ export default function Preview(props) {
         }
     }
 
-    console.log(props.selected.paqueteria);
     return (
         <div className='Preview'>
-            <div className='orden'>{props.selected.orden}</div>
-            <div className='info'>
-                <img className="paqueteria" src={paqueteriaImage(props.selected.paqueteria)}></img>
-                <div className='entregada'>ENTREGADA: {(new Date(props.selected.entregada)).toLocaleString()}</div>
-                <div className='embarcada'>EMBARCADA: {(new Date(props.selected.embarcada)).toLocaleString()}</div>
+            { props.selected !== undefined ? 
+            <div>
+                <div className='orden'>{props.selected.orden}</div>
+                <div className='info'>
+                    <img className="paqueteria" src={paqueteriaImage(props.selected.paqueteria)}></img>
+                    <div className='entregada'>ENTREGADA: {(new Date(props.selected.entregada)).toLocaleString()}</div>
+                    <div className='embarcada'>EMBARCADA: {(new Date(props.selected.embarcada)).toLocaleString()}</div>
+                </div>
+                <h3>Historia</h3>
+                <History history={props.selected.historia} />
             </div>
-            <h3>Historia</h3>
-            <History history={props.selected.historia} />
+            : <div>
+                <div className='orden'></div>
+                <div className='info'></div>
+            </div>}
         </div>
     )
 }
