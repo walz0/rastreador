@@ -301,21 +301,28 @@ app.post('/estafeta', async (req, res) => {
     // Check for cookie refresh and get waybill
     const wayBill = await renewCookie(guia);
 
-    await axios({
-        method: 'POST',
-        url: 'https://cs.estafeta.com/es/Tracking/GetTrackingItemHistory',
-        headers: {
-            'Content-Type': 'application/x-www-form-urlencoded',
-            'cookie': estafetaCookie.cookie
-        },
-        data: {
-            "waybill": wayBill
-        }
-    }).then((response) => {
-        res.send(response.data);
-    }).catch((err) => {
-        res.sendStatus(500);
-    });
+    const MAX_ATTEMPTS = 5;
+    // Attempt request no more than 5 times
+    for (var currAttempt = 0; currAttempt < MAX_ATTEMPTS; currAttempt++) {
+        await axios({
+            method: 'POST',
+            url: 'https://cs.estafeta.com/es/Tracking/GetTrackingItemHistory',
+            headers: {
+                'Content-Type': 'application/x-www-form-urlencoded',
+                'cookie': estafetaCookie.cookie
+            },
+            data: {
+                "waybill": wayBill
+            }
+        }).then((response) => {
+            res.send(response.data);
+        }).catch((err) => {
+            // If this is the last attempt
+            if (currAttempt > MAX_ATTEMPTS - 1) {
+                res.sendStatus(500);
+            }
+        });
+    }
 });
 
 // ex: 3026756050
